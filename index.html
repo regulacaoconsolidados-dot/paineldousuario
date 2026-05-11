@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👤 Portal do Paciente - Sistema OCI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0a1929 0%, #0f2b3d 50%, #1a3a4a 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 9999; flex-direction: column; }
+        .loading-overlay.show { display: flex; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .tab-btn { cursor: pointer; }
+        .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p class="text-white mt-4 font-bold">Processando...</p>
+</div>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 gradient-bg">
+    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100">
+        <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">👤</div>
+        <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Portal do Paciente</h1>
+        <p class="text-slate-500 text-sm mb-8">Solicite seu retorno e envie exames</p>
+        <div class="text-left space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome Completo *</label>
+                <input type="text" id="loginNome" placeholder="Seu nome completo" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none transition-all">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">CPF *</label>
+                <input type="text" id="loginCPF" placeholder="00000000000" maxlength="11" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none transition-all">
+            </div>
+        </div>
+        <button id="btnLogin" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all text-sm uppercase tracking-wider">🔓 Acessar Portal</button>
+        <p class="text-xs text-slate-400 mt-4">Digite seu CPF e Nome para acessar</p>
+        <p class="text-xs text-blue-500 mt-2"><a href="#" onclick="window.location.reload()">🔙 Voltar</a></p>
+    </div>
+</div>
+
+<!-- ============ PORTAL ============ -->
+<div id="portalScreen" class="hidden min-h-screen bg-slate-50">
+    
+    <!-- Header -->
+    <header class="gradient-bg text-white p-4 md:p-6 shadow-lg">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-lg">👤</div>
+                <div>
+                    <h2 class="text-lg font-extrabold">Portal do Paciente</h2>
+                    <p class="text-emerald-300 text-xs">Sistema OCI</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-bold" id="portalNome"></span>
+                <button onclick="logout()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-all">🚪 Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo -->
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        
+        <!-- Cards Info -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" id="infoCards"></div>
+
+        <!-- TABS -->
+        <div class="flex gap-6 border-b border-slate-200 mb-6 overflow-x-auto">
+            <button onclick="switchTab('solicitar')" id="tab-solicitar" class="tab-btn active pb-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fas fa-paper-plane text-blue-500"></i> Solicitar Retorno</button>
+            <button onclick="switchTab('exames')" id="tab-exames" class="tab-btn pb-3 text-sm font-bold text-slate-400 flex items-center gap-2 whitespace-nowrap"><i class="fas fa-cloud-upload-alt text-emerald-500"></i> Enviar Exames</button>
+            <button onclick="switchTab('historico')" id="tab-historico" class="tab-btn pb-3 text-sm font-bold text-slate-400 flex items-center gap-2 whitespace-nowrap"><i class="fas fa-history text-purple-500"></i> Histórico</button>
+        </div>
+
+        <!-- TAB: SOLICITAR RETORNO -->
+        <div id="content-solicitar" class="tab-content active">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+                <h3 class="text-lg font-bold text-slate-800 mb-6">📝 Solicitar Pedido de Retorno</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Unidade de Saúde *</label>
+                        <input type="text" id="unidadeSaude" placeholder="Ex: UBS Jardim das Flores" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Médico Solicitante *</label>
+                        <input type="text" id="medicoSolicitante" placeholder="Ex: Dr. Carlos Silva" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Especialidade *</label>
+                        <select id="especialidadeRetorno" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Data da 1ª Consulta</label>
+                        <input type="date" id="dataPrimeiraConsulta" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local da Consulta</label>
+                        <input type="text" id="localConsulta" placeholder="Ex: Hospital Municipal" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nº Prontuário</label>
+                        <input type="text" id="prontuario" placeholder="Ex: 12345" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Observações</label>
+                    <textarea id="observacao" rows="3" placeholder="Informações adicionais..." class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></textarea>
+                </div>
+                <button id="btnSolicitarRetorno" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2">
+                    <i class="fas fa-paper-plane"></i> ENVIAR SOLICITAÇÃO
+                </button>
+                <div id="msgSolicitar" class="mt-4 hidden"></div>
+            </div>
+        </div>
+
+        <!-- TAB: ENVIAR EXAMES -->
+        <div id="content-exames" class="tab-content">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+                <h3 class="text-lg font-bold text-slate-800 mb-6">📤 Enviar Exames Realizados</h3>
+                <p class="text-slate-500 mb-4">Selecione o retorno e anexe o arquivo do exame (foto ou PDF).</p>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Selecione o Retorno</label>
+                    <select id="retornoSelect" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none"></select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Arquivo do Exame (PDF ou Imagem)</label>
+                    <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-all cursor-pointer" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-slate-300 mb-3"></i>
+                        <p class="text-slate-500 font-bold">Clique para selecionar ou arraste o arquivo</p>
+                        <p class="text-xs text-slate-400 mt-1">PDF, JPG, PNG - Máx 5MB</p>
+                        <input type="file" id="arquivoExame" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+                    </div>
+                    <p id="nomeArquivo" class="text-sm text-emerald-600 font-bold mt-2 hidden"></p>
+                </div>
+                <button id="btnEnviarExame" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2">
+                    <i class="fas fa-cloud-upload-alt"></i> ENVIAR EXAME
+                </button>
+                <div id="msgExames" class="mt-4 hidden"></div>
+            </div>
+        </div>
+
+        <!-- TAB: HISTÓRICO -->
+        <div id="content-historico" class="tab-content">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+                <h3 class="text-lg font-bold text-slate-800 mb-6">📋 Meus Retornos e Exames</h3>
+                <div class="space-y-4" id="historicoLista"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ============================================
+// CONFIGURAÇÃO SUPABASE
+// ============================================
+const db = window.supabase.createClient('https://hheuvkyhwujdrvjvtryg.supabase.co', 'sb_publishable__YOfe8p2KexVxAe5ovSS5w_SOnqpuoe');
+
+let pacienteLogado = null;
+let retornos = [], especialidades = [];
+
+function showLoading(){ document.getElementById('loadingOverlay').classList.add('show'); }
+function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('show'); }
+function validarCPF(cpf){ cpf=cpf.replace(/\D/g,''); if(cpf.length!==11||/^(\d)\1{10}$/.test(cpf))return false; let s=0; for(let i=0;i<9;i++)s+=parseInt(cpf[i])*(10-i); let r=(s*10)%11; if(r===10)r=0; if(r!==parseInt(cpf[9]))return false; s=0; for(let i=0;i<10;i++)s+=parseInt(cpf[i])*(11-i); r=(s*10)%11; if(r===10)r=0; return r===parseInt(cpf[10]); }
+function formatarData(data){ if(!data)return'—'; return new Date(data.split('T')[0]).toLocaleDateString('pt-BR'); }
+
+async function carregarDados(){
+    showLoading();
+    const {data:p} = await db.from('pacientes_oci').select('*').eq('cpf', pacienteLogado.cpf).single();
+    if(p) pacienteLogado = {...pacienteLogado, id: p.id, telefone: p.telefone};
+    
+    const [r, e] = await Promise.all([
+        db.from('retornos_solicitados').select('*').eq('paciente_id', pacienteLogado.id).order('created_at',{ascending:false}),
+        db.from('especialidades_oci').select('*')
+    ]);
+    retornos = r.data || []; especialidades = e.data || [];
+    if(especialidades.length === 0) especialidades = [{id:1,nome:'Cardiologia',icone:'🫀'},{id:2,nome:'Ortopedia',icone:'🦴'},{id:3,nome:'Oncologia',icone:'🎗️'},{id:4,nome:'Oftalmologia',icone:'👁️'},{id:5,nome:'Otorrino',icone:'👂'}];
+    hideLoading();
+    atualizarPortal();
+}
+
+function atualizarPortal(){
+    document.getElementById('portalNome').textContent = pacienteLogado.nome;
+    document.getElementById('infoCards').innerHTML = `
+        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-blue-500"><p class="text-xs text-slate-500 uppercase font-bold">CPF</p><p class="text-lg font-extrabold text-slate-800">${pacienteLogado.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4')}</p></div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-emerald-500"><p class="text-xs text-slate-500 uppercase font-bold">Retornos</p><p class="text-lg font-extrabold text-slate-800">${retornos.length}</p></div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-purple-500"><p class="text-xs text-slate-500 uppercase font-bold">Status</p><p class="text-lg font-extrabold text-emerald-600">Ativo</p></div>
+    `;
+    document.getElementById('especialidadeRetorno').innerHTML = '<option value="">Selecione...</option>'+especialidades.map(e=>`<option value="${e.id}">${e.icone||''} ${e.nome}</option>`).join('');
+    document.getElementById('retornoSelect').innerHTML = '<option value="">Selecione um retorno...</option>'+retornos.filter(r=>r.status==='solicitado').map(r=>`<option value="${r.id}">📝 Retorno #${r.id} - ${formatarData(r.created_at)}</option>`).join('');
+    document.getElementById('historicoLista').innerHTML = retornos.length===0?'<p class="text-slate-400 text-center py-8">Nenhum retorno solicitado ainda.</p>':retornos.map(r=>`
+        <div class="border border-slate-200 rounded-xl p-4">
+            <div class="flex justify-between items-start"><div><p class="font-bold text-slate-800">📝 Retorno #${r.id}</p><p class="text-xs text-slate-500">${formatarData(r.created_at)} | ${r.unidade_saude||'—'} | Dr(a). ${r.medico_solicitante||'—'}</p></div><span class="px-2 py-1 rounded-full text-xs font-bold ${r.status==='solicitado'?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700'}">${r.status==='solicitado'?'⏳ Aguardando':'✅ Realizado'}</span></div>
+        </div>`).join('');
+}
+
+function switchTab(tabId){
+    document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active','text-blue-600');b.classList.add('text-slate-400');});
+    document.getElementById('tab-'+tabId).classList.add('active','text-blue-600');
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    document.getElementById('content-'+tabId).classList.add('active');
+}
+
+async function solicitarRetorno(){
+    const unidade = document.getElementById('unidadeSaude').value.trim();
+    const medico = document.getElementById('medicoSolicitante').value.trim();
+    const especialidade_id = document.getElementById('especialidadeRetorno').value;
+    if(!unidade||!medico||!especialidade_id) return mostrarMsg('msgSolicitar','❌ Preencha todos os campos obrigatórios!','rose');
+    
+    showLoading();
+    const {error} = await db.from('retornos_solicitados').insert([{
+        paciente_id: pacienteLogado.id,
+        unidade_saude: unidade,
+        medico_solicitante: medico,
+        especialidade_id: parseInt(especialidade_id),
+        data_primeira_consulta: document.getElementById('dataPrimeiraConsulta').value||null,
+        local_consulta: document.getElementById('localConsulta').value.trim(),
+        observacao: document.getElementById('observacao').value.trim(),
+        status:'solicitado'
+    }]);
+    hideLoading();
+    if(error){ mostrarMsg('msgSolicitar','❌ Erro: '+error.message,'rose'); return; }
+    mostrarMsg('msgSolicitar','✅ Retorno solicitado com sucesso! A central de marcação entrará em contato.','emerald');
+    document.getElementById('unidadeSaude').value=''; document.getElementById('medicoSolicitante').value='';
+    carregarDados();
+}
+
+async function enviarExame(){
+    const retorno_id = document.getElementById('retornoSelect').value;
+    const arquivo = document.getElementById('arquivoExame').files[0];
+    if(!retorno_id) return mostrarMsg('msgExames','❌ Selecione um retorno!','rose');
+    if(!arquivo) return mostrarMsg('msgExames','❌ Selecione um arquivo!','rose');
+    
+    showLoading();
+    const {error} = await db.from('exames_enviados').insert([{
+        paciente_id: pacienteLogado.id,
+        retorno_id: parseInt(retorno_id),
+        arquivo_nome: arquivo.name,
+        arquivo_url: 'arquivo_enviado_'+Date.now(),
+        status:'enviado'
+    }]);
+    await db.from('retornos_solicitados').update({status:'exame_enviado'}).eq('id', retorno_id);
+    hideLoading();
+    if(error){ mostrarMsg('msgExames','❌ Erro: '+error.message,'rose'); return; }
+    mostrarMsg('msgExames','✅ Exame enviado com sucesso! Seu retorno será agendado.','emerald');
+    document.getElementById('nomeArquivo').classList.add('hidden');
+    carregarDados();
+}
+
+function mostrarMsg(id, texto, cor){ const el=document.getElementById(id); el.className='mt-4 p-3 rounded-xl text-sm font-bold border-l-4 '+ (cor==='emerald'?'bg-emerald-50 text-emerald-700 border-emerald-500':'bg-rose-50 text-rose-700 border-rose-500'); el.textContent=texto; el.classList.remove('hidden'); }
+
+function logout(){ pacienteLogado=null; document.getElementById('portalScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); }
+
+// EVENTOS
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('btnLogin').addEventListener('click',async()=>{
+        const nome=document.getElementById('loginNome').value.trim();
+        const cpf=document.getElementById('loginCPF').value.trim();
+        if(!nome)return alert('Digite seu nome!');
+        if(!cpf||!validarCPF(cpf))return alert('CPF inválido!');
+        showLoading();
+        const {data} = await db.from('pacientes_oci').select('*').eq('cpf',cpf);
+        hideLoading();
+        if(!data||data.length===0) return alert('❌ Paciente não encontrado. Procure a central de marcação.');
+        pacienteLogado = data[0];
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('portalScreen').classList.remove('hidden');
+        carregarDados();
+    });
+
+    document.getElementById('btnSolicitarRetorno').addEventListener('click',solicitarRetorno);
+    document.getElementById('btnEnviarExame').addEventListener('click',enviarExame);
+    document.getElementById('uploadArea').addEventListener('click',()=>document.getElementById('arquivoExame').click());
+    document.getElementById('arquivoExame').addEventListener('change',function(){ if(this.files[0]){ document.getElementById('nomeArquivo').textContent='📎 '+this.files[0].name; document.getElementById('nomeArquivo').classList.remove('hidden'); } });
+    
+    ['loginNome','loginCPF'].forEach(id=>{ document.getElementById(id)?.addEventListener('keypress',e=>{ if(e.key==='Enter')document.getElementById('btnLogin').click(); }); });
+    console.log('✅ Portal do Paciente pronto!');
+});
+</script>
+</body>
+</html>

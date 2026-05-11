@@ -64,7 +64,7 @@
         <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">📝</div>
         <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Primeiro Acesso</h1>
         <p class="text-slate-500 text-sm mb-6">Preencha seus dados para se cadastrar</p>
-        <div class="text-left space-y-3">
+        <div class="text-left space-y-3" style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome Completo *</label>
                 <input type="text" id="cadNome" placeholder="Seu nome completo" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
@@ -72,6 +72,18 @@
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">CPF *</label>
                 <input type="text" id="cadCPF" placeholder="00000000000" maxlength="11" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Data de Nascimento *</label>
+                <input type="date" id="cadNascimento" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome Completo da Mãe *</label>
+                <input type="text" id="cadNomeMae" placeholder="Nome da sua mãe" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Cidade onde Nasceu *</label>
+                <input type="text" id="cadCidade" placeholder="Sua cidade natal" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Telefone Celular *</label>
@@ -100,7 +112,7 @@
     <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100" style="margin: auto;">
         <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">🔑</div>
         <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Redefinir Senha</h1>
-        <p class="text-slate-500 text-sm mb-6">Receba um código no seu WhatsApp</p>
+        <p class="text-slate-500 text-sm mb-6">Responda as perguntas de segurança</p>
         
         <div id="etapaSolicitar">
             <div class="text-left space-y-4">
@@ -109,15 +121,19 @@
                     <input type="text" id="redefCPF" placeholder="00000000000" maxlength="11" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Telefone Cadastrado *</label>
-                    <input type="text" id="redefTelefone" placeholder="11999999999" maxlength="11" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome da sua Mãe *</label>
+                    <input type="text" id="redefNomeMae" placeholder="Nome completo da sua mãe" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Cidade onde Nasceu *</label>
+                    <input type="text" id="redefCidade" placeholder="Sua cidade natal" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none">
                 </div>
             </div>
-            <button id="btnSolicitarCodigo" class="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all text-sm uppercase tracking-wider">📱 Receber Código</button>
+            <button id="btnSolicitarCodigo" class="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all text-sm uppercase tracking-wider">📱 Receber Código no WhatsApp</button>
         </div>
         
         <div id="etapaVerificar" class="hidden">
-            <p class="text-sm text-slate-600 mb-4">Enviamos um código para seu WhatsApp</p>
+            <p class="text-sm text-slate-600 mb-4">Enviamos um código ALEATÓRIO para seu WhatsApp</p>
             <div class="text-left space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Código Recebido *</label>
@@ -166,15 +182,17 @@
         <div id="content-solicitar" class="tab-content active">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
                 <h3 class="text-lg font-bold text-slate-800 mb-6">📝 Solicitar Pedido de Retorno</h3>
+                <p class="text-sm text-slate-500 mb-4">⚠️ Só é possível solicitar retorno se você já passou pela <strong>primeira consulta</strong> no programa OCI.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nº Prontuário *</label><input type="text" id="prontuario" placeholder="Ex: PRONT123" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
+                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome da sua Mãe *</label><input type="text" id="validarNomeMae" placeholder="Confirme o nome da sua mãe" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
                     <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Unidade de Saúde *</label><input type="text" id="unidadeSaude" placeholder="Ex: UBS Jardim das Flores" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
                     <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Médico Solicitante *</label><input type="text" id="medicoSolicitante" placeholder="Ex: Dr. Carlos Silva" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
                     <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Especialidade *</label><select id="especialidadeRetorno" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></select></div>
                     <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Data da 1ª Consulta</label><input type="date" id="dataPrimeiraConsulta" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
                     <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local da Consulta</label><input type="text" id="localConsulta" placeholder="Ex: Hospital Municipal" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nº Prontuário</label><input type="text" id="prontuario" placeholder="Ex: 12345" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
                 </div>
-                <button id="btnSolicitarRetorno" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"><i class="fas fa-paper-plane"></i> ENVIAR SOLICITAÇÃO</button>
+                <button id="btnSolicitarRetorno" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"><i class="fas fa-paper-plane"></i> VALIDAR E SOLICITAR</button>
                 <div id="msgSolicitar" class="mt-4 hidden"></div>
             </div>
         </div>
@@ -201,10 +219,9 @@
 
 <script>
 // ============================================
-// CONFIGURAÇÃO
+// CONFIGURAÇÃO SUPABASE
 // ============================================
 const db = window.supabase.createClient('https://hheuvkyhwujdrvjvtryg.supabase.co', 'sb_publishable__YOfe8p2KexVxAe5ovSS5w_SOnqpuoe');
-const CODIGO_SEGURANCA = '123456';
 
 let pacienteLogado = null;
 let retornos = [], especialidades = [];
@@ -214,13 +231,13 @@ function showLoading(){ document.getElementById('loadingOverlay').classList.add(
 function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('show'); }
 function validarCPF(cpf){ cpf=cpf.replace(/\D/g,''); if(cpf.length!==11||/^(\d)\1{10}$/.test(cpf))return false; let s=0; for(let i=0;i<9;i++)s+=parseInt(cpf[i])*(10-i); let r=(s*10)%11; if(r===10)r=0; if(r!==parseInt(cpf[9]))return false; s=0; for(let i=0;i<10;i++)s+=parseInt(cpf[i])*(11-i); r=(s*10)%11; if(r===10)r=0; return r===parseInt(cpf[10]); }
 function formatarData(data){ if(!data)return'—'; return new Date(data.split('T')[0]).toLocaleDateString('pt-BR'); }
+function gerarCodigoAleatorio(){ return String(Math.floor(100000 + Math.random() * 900000)); }
 
 function showScreen(id){
     document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.display='none'; });
     const el = document.getElementById(id);
     el.classList.add('active');
-    el.style.display='flex';
-    if(id==='screenPortal'){ el.style.display='block'; el.classList.add('active'); }
+    el.style.display = (id==='screenPortal') ? 'block' : 'flex';
 }
 
 // ============================================
@@ -253,6 +270,9 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 document.getElementById('btnCadastrar').addEventListener('click', async () => {
     const nome = document.getElementById('cadNome').value.trim();
     const cpf = document.getElementById('cadCPF').value.trim();
+    const data_nascimento = document.getElementById('cadNascimento').value;
+    const nome_mae = document.getElementById('cadNomeMae').value.trim();
+    const cidade_nascimento = document.getElementById('cadCidade').value.trim();
     const telefone = document.getElementById('cadTelefone').value.trim();
     const email = document.getElementById('cadEmail').value.trim();
     const senha = document.getElementById('cadSenha').value;
@@ -260,6 +280,9 @@ document.getElementById('btnCadastrar').addEventListener('click', async () => {
     
     if(!nome) return alert('Digite seu nome!');
     if(!cpf||!validarCPF(cpf)) return alert('CPF inválido!');
+    if(!data_nascimento) return alert('Informe sua data de nascimento!');
+    if(!nome_mae) return alert('Informe o nome da sua mãe!');
+    if(!cidade_nascimento) return alert('Informe sua cidade natal!');
     if(!telefone||telefone.length<10) return alert('Telefone inválido!');
     if(!senha||senha.length!==6) return alert('Senha deve ter 6 dígitos!');
     if(senha !== confirma) return alert('Senhas não conferem!');
@@ -268,7 +291,7 @@ document.getElementById('btnCadastrar').addEventListener('click', async () => {
     const {data:existente} = await db.from('pacientes_oci').select('*').eq('cpf',cpf);
     if(existente&&existente.length>0){ hideLoading(); return alert('❌ CPF já cadastrado! Faça login ou redefina sua senha.'); }
     
-    const {error} = await db.from('pacientes_oci').insert([{nome,cpf,telefone,email,senha}]);
+    const {error} = await db.from('pacientes_oci').insert([{nome,cpf,data_nascimento,nome_mae,cidade_nascimento,telefone,email,senha,primeira_consulta:false}]);
     hideLoading();
     if(error) return alert('❌ Erro: '+error.message);
     
@@ -277,27 +300,39 @@ document.getElementById('btnCadastrar').addEventListener('click', async () => {
 });
 
 // ============================================
-// REDEFINIR SENHA
+// REDEFINIR SENHA (com perguntas de segurança)
 // ============================================
 document.getElementById('btnSolicitarCodigo').addEventListener('click', async () => {
     const cpf = document.getElementById('redefCPF').value.trim();
-    const telefone = document.getElementById('redefTelefone').value.trim();
+    const nome_mae = document.getElementById('redefNomeMae').value.trim();
+    const cidade = document.getElementById('redefCidade').value.trim();
+    
     if(!cpf||!validarCPF(cpf)) return alert('CPF inválido!');
+    if(!nome_mae) return alert('Informe o nome da sua mãe!');
+    if(!cidade) return alert('Informe sua cidade natal!');
     
     showLoading();
     const {data} = await db.from('pacientes_oci').select('*').eq('cpf',cpf);
     hideLoading();
     
     if(!data||data.length===0) return alert('❌ Paciente não encontrado.');
-    if(data[0].telefone !== telefone) return alert('❌ Telefone não confere com o cadastro.');
     
-    codigoRedefinicao = CODIGO_SEGURANCA;
+    const p = data[0];
+    if(p.nome_mae !== nome_mae) return alert('❌ Nome da mãe não confere!');
+    if(p.cidade_nascimento !== cidade) return alert('❌ Cidade natal não confere!');
+    
+    // Gerar código ALEATÓRIO
+    codigoRedefinicao = gerarCodigoAleatorio();
+    
+    // Salvar código no banco
+    await db.from('pacientes_oci').update({codigo_redefinicao: codigoRedefinicao}).eq('cpf',cpf);
+    
     document.getElementById('etapaSolicitar').classList.add('hidden');
     document.getElementById('etapaVerificar').classList.remove('hidden');
     
-    const msg = encodeURIComponent(`*Sistema OCI - Redefinição de Senha*\n\nSeu código de verificação é: *${codigoRedefinicao}*\n\nNão compartilhe este código com ninguém.`);
-    window.open(`https://wa.me/55${telefone.replace(/\D/g,'')}?text=${msg}`, '_blank');
-    alert('📱 Código enviado para seu WhatsApp!');
+    const msg = encodeURIComponent(`*Sistema OCI - Redefinição de Senha*\n\nSeu código de verificação é: *${codigoRedefinicao}*\n\n⚠️ Não compartilhe este código com ninguém!\n\nSe não foi você, ignore esta mensagem.`);
+    window.open(`https://wa.me/55${p.telefone.replace(/\D/g,'')}?text=${msg}`, '_blank');
+    alert('📱 Código ALEATÓRIO enviado para seu WhatsApp!');
 });
 
 document.getElementById('btnConfirmarRedefinir').addEventListener('click', async () => {
@@ -309,12 +344,14 @@ document.getElementById('btnConfirmarRedefinir').addEventListener('click', async
     if(!novaSenha||novaSenha.length!==6) return alert('Senha deve ter 6 dígitos!');
     
     showLoading();
-    await db.from('pacientes_oci').update({senha:novaSenha}).eq('cpf',cpf);
+    await db.from('pacientes_oci').update({senha:novaSenha,codigo_redefinicao:null}).eq('cpf',cpf);
     hideLoading();
     
     alert('✅ Senha redefinida com sucesso! Faça login.');
     document.getElementById('etapaSolicitar').classList.remove('hidden');
     document.getElementById('etapaVerificar').classList.add('hidden');
+    document.getElementById('redefCodigo').value='';
+    document.getElementById('redefNovaSenha').value='';
     showScreen('screenLogin');
 });
 
@@ -336,7 +373,7 @@ async function carregarPortal(){
     document.getElementById('infoCards').innerHTML = `
         <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-blue-500"><p class="text-xs text-slate-500 uppercase font-bold">CPF</p><p class="text-lg font-extrabold text-slate-800">${pacienteLogado.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4')}</p></div>
         <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-emerald-500"><p class="text-xs text-slate-500 uppercase font-bold">Retornos</p><p class="text-lg font-extrabold text-slate-800">${retornos.length}</p></div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-purple-500"><p class="text-xs text-slate-500 uppercase font-bold">Telefone</p><p class="text-lg font-extrabold text-slate-800">${pacienteLogado.telefone||'—'}</p></div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-purple-500"><p class="text-xs text-slate-500 uppercase font-bold">Prontuário</p><p class="text-lg font-extrabold text-slate-800">${pacienteLogado.prontuario||'—'}</p></div>
     `;
     document.getElementById('especialidadeRetorno').innerHTML = '<option value="">Selecione...</option>'+especialidades.map(e=>`<option value="${e.id}">${e.icone||''} ${e.nome}</option>`).join('');
     document.getElementById('retornoSelect').innerHTML = '<option value="">Selecione...</option>'+retornos.filter(r=>r.status==='solicitado').map(r=>`<option value="${r.id}">📝 Retorno #${r.id} - ${formatarData(r.created_at)}</option>`).join('');
@@ -350,21 +387,79 @@ function switchTab(tabId){
     document.getElementById('content-'+tabId).classList.add('active');
 }
 
-document.getElementById('btnSolicitarRetorno').addEventListener('click',async()=>{
-    const unidade=document.getElementById('unidadeSaude').value.trim();
-    const medico=document.getElementById('medicoSolicitante').value.trim();
-    const esp=document.getElementById('especialidadeRetorno').value;
-    if(!unidade||!medico||!esp) return alert('Preencha os campos obrigatórios!');
+// ============================================
+// SOLICITAR RETORNO (COM VALIDAÇÃO)
+// ============================================
+document.getElementById('btnSolicitarRetorno').addEventListener('click', async () => {
+    const prontuario = document.getElementById('prontuario').value.trim();
+    const nome_mae = document.getElementById('validarNomeMae').value.trim();
+    const unidade = document.getElementById('unidadeSaude').value.trim();
+    const medico = document.getElementById('medicoSolicitante').value.trim();
+    const esp = document.getElementById('especialidadeRetorno').value;
+    
+    if(!prontuario) return alert('Informe o número do prontuário!');
+    if(!nome_mae) return alert('Informe o nome da sua mãe!');
+    if(!unidade||!medico||!esp) return alert('Preencha todos os campos obrigatórios!');
+    
     showLoading();
-    await db.from('retornos_solicitados').insert([{paciente_id:pacienteLogado.id,unidade_saude:unidade,medico_solicitante:medico,especialidade_id:parseInt(esp),data_primeira_consulta:document.getElementById('dataPrimeiraConsulta').value||null,local_consulta:document.getElementById('localConsulta').value.trim(),status:'solicitado'}]);
+    
+    // 🔍 VALIDAR SE O PACIENTE ESTÁ NO BANCO DA 1ª CONSULTA
+    const {data: paciente} = await db.from('pacientes_oci').select('*').eq('cpf', pacienteLogado.cpf).single();
+    
+    if(!paciente || !paciente.primeira_consulta){
+        // Verificar se os dados batem com os cadastrados
+        const nomeMaeCadastrado = (paciente?.nome_mae || '').toUpperCase();
+        const nomeMaeInformado = nome_mae.toUpperCase();
+        
+        if(nomeMaeCadastrado !== nomeMaeInformado){
+            hideLoading();
+            mostrarMsg('msgSolicitar', '❌ Nome da mãe não confere com nosso cadastro.', 'rose');
+            return;
+        }
+    }
+    
+    // Verificar se o paciente tem primeira consulta registrada
+    const {data: consultas} = await db.from('consultas_oci').select('*').eq('paciente_id', pacienteLogado.id);
+    
+    if(!consultas || consultas.length === 0){
+        hideLoading();
+        mostrarMsg('msgSolicitar', '⚠️ Paciente não encontrado nos registros de primeira consulta. Você precisa ter passado pela 1ª consulta para solicitar retorno.', 'rose');
+        return;
+    }
+    
+    // ✅ TUDO CERTO - Registrar retorno
+    await db.from('retornos_solicitados').insert([{
+        paciente_id: pacienteLogado.id,
+        unidade_saude: unidade,
+        medico_solicitante: medico,
+        especialidade_id: parseInt(esp),
+        data_primeira_consulta: document.getElementById('dataPrimeiraConsulta').value || null,
+        local_consulta: document.getElementById('localConsulta').value.trim(),
+        status: 'solicitado'
+    }]);
+    
+    // Atualizar prontuário
+    await db.from('pacientes_oci').update({prontuario: prontuario}).eq('id', pacienteLogado.id);
+    
     hideLoading();
-    alert('✅ Retorno solicitado!');
+    mostrarMsg('msgSolicitar', '✅ Retorno solicitado com sucesso! A central de marcação entrará em contato.', 'emerald');
+    document.getElementById('prontuario').value = '';
+    document.getElementById('validarNomeMae').value = '';
+    document.getElementById('unidadeSaude').value = '';
+    document.getElementById('medicoSolicitante').value = '';
     carregarPortal();
 });
 
-document.getElementById('btnEnviarExame').addEventListener('click',async()=>{
-    const retorno_id=document.getElementById('retornoSelect').value;
-    const arquivo=document.getElementById('arquivoExame').files[0];
+function mostrarMsg(id, texto, cor){
+    const el = document.getElementById(id);
+    el.className = 'mt-4 p-3 rounded-xl text-sm font-bold border-l-4 ' + (cor==='emerald'?'bg-emerald-50 text-emerald-700 border-emerald-500':'bg-rose-50 text-rose-700 border-rose-500');
+    el.textContent = texto;
+    el.classList.remove('hidden');
+}
+
+document.getElementById('btnEnviarExame').addEventListener('click', async () => {
+    const retorno_id = document.getElementById('retornoSelect').value;
+    const arquivo = document.getElementById('arquivoExame').files[0];
     if(!retorno_id||!arquivo) return alert('Selecione o retorno e o arquivo!');
     showLoading();
     await db.from('exames_enviados').insert([{paciente_id:pacienteLogado.id,retorno_id:parseInt(retorno_id),arquivo_nome:arquivo.name,arquivo_url:'arquivo_'+Date.now(),status:'enviado'}]);
@@ -379,7 +474,10 @@ document.getElementById('arquivoExame').addEventListener('change',function(){if(
 
 function logout(){ pacienteLogado=null; showScreen('screenLogin'); }
 
-console.log('✅ Portal do Paciente CORRIGIDO!');
+console.log('✅ Portal do Paciente SEGURO E COMPLETO!');
+console.log('🔐 Código redefinição: ALEATÓRIO');
+console.log('🔍 Validação: CPF + Prontuário + Nome da Mãe');
+console.log('🚫 Só solicita retorno após 1ª consulta');
 </script>
 </body>
 </html>

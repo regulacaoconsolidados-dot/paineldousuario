@@ -22,8 +22,8 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
-        .screen { display: none; }
-        .screen.active { display: block; }
+        .screen { display: none; min-height: 100vh; }
+        .screen.active { display: flex; justify-content: center; align-items: center; padding: 20px; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -35,8 +35,8 @@
 </div>
 
 <!-- ============ TELA 1: LOGIN ============ -->
-<div id="screenLogin" class="screen active min-h-screen flex items-center justify-center p-4 gradient-bg">
-    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100">
+<div id="screenLogin" class="screen active gradient-bg">
+    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100" style="margin: auto;">
         <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">👤</div>
         <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Portal do Paciente</h1>
         <p class="text-slate-500 text-sm mb-8">Acesse seu histórico e solicite retornos</p>
@@ -52,15 +52,15 @@
         </div>
         <button id="btnLogin" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all text-sm uppercase tracking-wider">🔓 Entrar</button>
         <div class="mt-4 space-y-2">
-            <p class="text-sm text-slate-500">Primeiro acesso? <a href="#" onclick="showScreen('screenCadastro')" class="text-blue-600 font-bold hover:underline">Cadastre-se aqui</a></p>
-            <p class="text-sm text-slate-500"><a href="#" onclick="showScreen('screenRedefinir')" class="text-rose-600 font-bold hover:underline">🔑 Esqueci minha senha</a></p>
+            <p class="text-sm text-slate-500">Primeiro acesso? <span onclick="showScreen('screenCadastro')" class="text-blue-600 font-bold hover:underline cursor-pointer">Cadastre-se aqui</span></p>
+            <p class="text-sm text-slate-500"><span onclick="showScreen('screenRedefinir')" class="text-rose-600 font-bold hover:underline cursor-pointer">🔑 Esqueci minha senha</span></p>
         </div>
     </div>
 </div>
 
 <!-- ============ TELA 2: CADASTRO ============ -->
-<div id="screenCadastro" class="screen min-h-screen flex items-center justify-center p-4 gradient-bg">
-    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100">
+<div id="screenCadastro" class="screen gradient-bg">
+    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100" style="margin: auto;">
         <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">📝</div>
         <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Primeiro Acesso</h1>
         <p class="text-slate-500 text-sm mb-6">Preencha seus dados para se cadastrar</p>
@@ -91,18 +91,17 @@
             </div>
         </div>
         <button id="btnCadastrar" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all text-sm uppercase tracking-wider">📝 Criar Cadastro</button>
-        <p class="text-sm text-slate-500 mt-4">Já tem cadastro? <a href="#" onclick="showScreen('screenLogin')" class="text-emerald-600 font-bold hover:underline">Fazer login</a></p>
+        <p class="text-sm text-slate-500 mt-4">Já tem cadastro? <span onclick="showScreen('screenLogin')" class="text-emerald-600 font-bold hover:underline cursor-pointer">Fazer login</span></p>
     </div>
 </div>
 
 <!-- ============ TELA 3: REDEFINIR SENHA ============ -->
-<div id="screenRedefinir" class="screen min-h-screen flex items-center justify-center p-4 gradient-bg">
-    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100">
+<div id="screenRedefinir" class="screen gradient-bg">
+    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100" style="margin: auto;">
         <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">🔑</div>
         <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Redefinir Senha</h1>
         <p class="text-slate-500 text-sm mb-6">Receba um código no seu WhatsApp</p>
         
-        <!-- Etapa 1: Solicitar código -->
         <div id="etapaSolicitar">
             <div class="text-left space-y-4">
                 <div>
@@ -117,7 +116,6 @@
             <button id="btnSolicitarCodigo" class="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all text-sm uppercase tracking-wider">📱 Receber Código</button>
         </div>
         
-        <!-- Etapa 2: Verificar código -->
         <div id="etapaVerificar" class="hidden">
             <p class="text-sm text-slate-600 mb-4">Enviamos um código para seu WhatsApp</p>
             <div class="text-left space-y-4">
@@ -133,12 +131,13 @@
             <button id="btnConfirmarRedefinir" class="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all text-sm uppercase tracking-wider">✅ Redefinir Senha</button>
         </div>
         
-        <p class="text-sm text-slate-500 mt-4"><a href="#" onclick="showScreen('screenLogin')" class="text-emerald-600 font-bold hover:underline">🔙 Voltar ao Login</a></p>
+        <p class="text-sm text-slate-500 mt-4"><span onclick="showScreen('screenLogin')" class="text-emerald-600 font-bold hover:underline cursor-pointer">🔙 Voltar ao Login</span></p>
     </div>
 </div>
 
 <!-- ============ TELA 4: PORTAL ============ -->
-<div id="screenPortal" class="screen min-h-screen bg-slate-50">
+<div id="screenPortal" class="screen" style="display:none; min-height:100vh; background:#f8fafc;">
+    <div style="width:100%;">
     <header class="gradient-bg text-white p-4 md:p-6 shadow-lg">
         <div class="max-w-4xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -197,6 +196,7 @@
             </div>
         </div>
     </div>
+    </div>
 </div>
 
 <script>
@@ -216,8 +216,11 @@ function validarCPF(cpf){ cpf=cpf.replace(/\D/g,''); if(cpf.length!==11||/^(\d)\
 function formatarData(data){ if(!data)return'—'; return new Date(data.split('T')[0]).toLocaleDateString('pt-BR'); }
 
 function showScreen(id){
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.display='none'; });
+    const el = document.getElementById(id);
+    el.classList.add('active');
+    el.style.display='flex';
+    if(id==='screenPortal'){ el.style.display='block'; el.classList.add('active'); }
 }
 
 // ============================================
@@ -237,7 +240,10 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
     if(data[0].senha !== senha) return alert('❌ Senha incorreta!');
     
     pacienteLogado = data[0];
-    showScreen('screenPortal');
+    document.getElementById('screenLogin').classList.remove('active');
+    document.getElementById('screenLogin').style.display='none';
+    document.getElementById('screenPortal').classList.add('active');
+    document.getElementById('screenPortal').style.display='block';
     carregarPortal();
 });
 
@@ -307,9 +313,9 @@ document.getElementById('btnConfirmarRedefinir').addEventListener('click', async
     hideLoading();
     
     alert('✅ Senha redefinida com sucesso! Faça login.');
-    showScreen('screenLogin');
     document.getElementById('etapaSolicitar').classList.remove('hidden');
     document.getElementById('etapaVerificar').classList.add('hidden');
+    showScreen('screenLogin');
 });
 
 // ============================================
@@ -373,10 +379,7 @@ document.getElementById('arquivoExame').addEventListener('change',function(){if(
 
 function logout(){ pacienteLogado=null; showScreen('screenLogin'); }
 
-console.log('✅ Portal do Paciente SEGURO pronto!');
-console.log('🔐 Login: CPF + Senha 6 dígitos');
-console.log('📝 Cadastro: Nome, CPF, Telefone, Email, Senha');
-console.log('🔑 Redefinir senha via WhatsApp');
+console.log('✅ Portal do Paciente CORRIGIDO!');
 </script>
 </body>
 </html>

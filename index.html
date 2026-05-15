@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👤 Portal do Paciente - Sistema OCI</title>
+    <title>👤 Portal do Paciente - Sistema OCI v5.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
         .gradient-bg { background: linear-gradient(135deg, #0a1929 0%, #0f2b3d 50%, #1a3a4a 100%); }
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
@@ -17,13 +17,14 @@
         .loading-overlay.show { display: flex; }
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .tab-btn { cursor: pointer; }
-        .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
+        .tab-btn { cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { color: #10b981; border-bottom: 3px solid #10b981; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
         .screen { display: none; min-height: 100vh; }
         .screen.active { display: flex; justify-content: center; align-items: center; padding: 20px; }
+        input:focus, select:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -34,145 +35,405 @@
     <p class="text-white mt-4 font-bold">Processando...</p>
 </div>
 
-<!-- ============ TELA 1: LOGIN ============ -->
+<!-- ============================================ -->
+<!-- TELA 1: LOGIN -->
+<!-- ============================================ -->
 <div id="screenLogin" class="screen active gradient-bg">
-    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100" style="margin: auto;">
+    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100 mx-4">
         <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">👤</div>
         <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Portal do Paciente</h1>
-        <p class="text-slate-500 text-sm mb-8">Acesse seu histórico e solicite retornos</p>
+        <p class="text-slate-500 text-sm mb-2">Sistema OCI v5.3</p>
+        <p class="text-slate-400 text-xs mb-6">Acesse seu histórico e solicite retornos</p>
+        
         <div class="text-left space-y-4">
             <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">CPF *</label>
-                <input type="text" id="loginCPF" placeholder="00000000000" maxlength="11" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none transition-all">
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                    <i class="fas fa-id-card text-emerald-500"></i> CPF *
+                </label>
+                <input type="text" id="loginCPF" placeholder="000.000.000-00" maxlength="14" 
+                       class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none transition-all text-lg"
+                       oninput="mascaraCPF(this)">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Senha (6 dígitos) *</label>
-                <input type="password" id="loginSenha" placeholder="******" maxlength="6" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none transition-all">
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                    <i class="fas fa-lock text-emerald-500"></i> Senha (6 dígitos) *
+                </label>
+                <div class="relative">
+                    <input type="password" id="loginSenha" placeholder="******" maxlength="6" 
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none transition-all text-lg pr-12">
+                    <button type="button" onclick="toggleSenha('loginSenha', this)" 
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <i class="far fa-eye text-lg"></i>
+                    </button>
+                </div>
             </div>
         </div>
-        <button id="btnLogin" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all text-sm uppercase tracking-wider">🔓 Entrar</button>
+        
+        <button id="btnLogin" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all transform hover:scale-[1.02] active:scale-95">
+            <i class="fas fa-sign-in-alt"></i> ENTRAR
+        </button>
+        
         <div class="mt-4 space-y-2">
-            <p class="text-sm text-slate-500">Primeiro acesso? <span onclick="showScreen('screenCadastro')" class="text-blue-600 font-bold hover:underline cursor-pointer">Cadastre-se aqui</span></p>
-            <p class="text-sm text-slate-500"><span onclick="showScreen('screenRedefinir')" class="text-rose-600 font-bold hover:underline cursor-pointer">🔑 Esqueci minha senha</span></p>
+            <p class="text-sm text-slate-500">
+                Primeiro acesso? 
+                <span onclick="showScreen('screenCadastro')" class="text-blue-600 font-bold hover:underline cursor-pointer">Cadastre-se aqui</span>
+            </p>
+            <p class="text-sm text-slate-500">
+                <span onclick="showScreen('screenRedefinir')" class="text-rose-600 font-bold hover:underline cursor-pointer">
+                    <i class="fas fa-key"></i> Esqueci minha senha
+                </span>
+            </p>
         </div>
     </div>
 </div>
 
-<!-- ============ TELA 2: CADASTRO ============ -->
+<!-- ============================================ -->
+<!-- TELA 2: CADASTRO -->
+<!-- ============================================ -->
 <div id="screenCadastro" class="screen gradient-bg">
-    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100" style="margin: auto;">
-        <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">📝</div>
-        <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Primeiro Acesso</h1>
-        <p class="text-slate-500 text-sm mb-6">Preencha seus dados para se cadastrar</p>
-        <div class="text-left space-y-3" style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome Completo *</label><input type="text" id="cadNome" placeholder="Seu nome completo" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">CPF *</label><input type="text" id="cadCPF" placeholder="00000000000" maxlength="11" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Data de Nascimento *</label><input type="date" id="cadNascimento" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome Completo da Mãe *</label><input type="text" id="cadNomeMae" placeholder="Nome da sua mãe" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Cidade onde Nasceu *</label><input type="text" id="cadCidade" placeholder="Sua cidade natal" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Telefone Celular *</label><input type="text" id="cadTelefone" placeholder="11999999999" maxlength="11" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email</label><input type="email" id="cadEmail" placeholder="seu@email.com" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Crie uma Senha (6 dígitos) *</label><input type="password" id="cadSenha" placeholder="******" maxlength="6" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Confirme a Senha *</label><input type="password" id="cadConfirmaSenha" placeholder="******" maxlength="6" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
+    <div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-lg shadow-2xl text-center border border-slate-100 mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3">📝</div>
+        <h1 class="text-xl font-extrabold text-slate-800 mb-1">Primeiro Acesso</h1>
+        <p class="text-slate-500 text-xs mb-4">Preencha todos os campos para se cadastrar</p>
+        
+        <div class="text-left space-y-3">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Nome Completo *</label>
+                <input type="text" id="cadNome" placeholder="Seu nome completo" 
+                       class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">CPF *</label>
+                    <input type="text" id="cadCPF" placeholder="000.000.000-00" maxlength="14" 
+                           class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm"
+                           oninput="mascaraCPF(this)">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Data Nascimento *</label>
+                    <input type="date" id="cadNascimento" 
+                           class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Nome Completo da Mãe *</label>
+                <input type="text" id="cadNomeMae" placeholder="Nome da sua mãe" 
+                       class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Cidade Natal *</label>
+                    <input type="text" id="cadCidade" placeholder="Onde nasceu" 
+                           class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">📱 Telefone *</label>
+                    <input type="text" id="cadTelefone" placeholder="(00) 00000-0000" maxlength="15" 
+                           class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm"
+                           oninput="mascaraTelefone(this)">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Email</label>
+                <input type="email" id="cadEmail" placeholder="seu@email.com" 
+                       class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Senha (6 dígitos) *</label>
+                    <input type="password" id="cadSenha" placeholder="******" maxlength="6" 
+                           class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Confirmar Senha *</label>
+                    <input type="password" id="cadConfirmaSenha" placeholder="******" maxlength="6" 
+                           class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm">
+                </div>
+            </div>
         </div>
-        <button id="btnCadastrar" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all text-sm uppercase tracking-wider">📝 Criar Cadastro</button>
-        <p class="text-sm text-slate-500 mt-4">Já tem cadastro? <span onclick="showScreen('screenLogin')" class="text-emerald-600 font-bold hover:underline cursor-pointer">Fazer login</span></p>
+        
+        <button id="btnCadastrar" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all transform hover:scale-[1.02] active:scale-95 text-sm">
+            <i class="fas fa-user-plus"></i> CRIAR CADASTRO
+        </button>
+        
+        <p class="text-xs text-slate-500 mt-3">
+            Já tem cadastro? 
+            <span onclick="showScreen('screenLogin')" class="text-emerald-600 font-bold hover:underline cursor-pointer">Fazer login</span>
+        </p>
     </div>
 </div>
 
-<!-- ============ TELA 3: REDEFINIR SENHA ============ -->
+<!-- ============================================ -->
+<!-- TELA 3: REDEFINIR SENHA -->
+<!-- ============================================ -->
 <div id="screenRedefinir" class="screen gradient-bg">
-    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100" style="margin: auto;">
+    <div class="bg-white rounded-3xl p-8 md:p-10 w-full max-w-md shadow-2xl text-center border border-slate-100 mx-4">
         <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">🔑</div>
         <h1 class="text-2xl font-extrabold text-slate-800 mb-1">Redefinir Senha</h1>
-        <p class="text-slate-500 text-sm mb-6">Responda as perguntas de segurança</p>
+        <p class="text-slate-500 text-sm mb-6" id="redefTitulo">Responda as perguntas de segurança</p>
+        
+        <!-- Etapa 1: Verificação -->
         <div id="etapaSolicitar">
             <div class="text-left space-y-4">
-                <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">CPF *</label><input type="text" id="redefCPF" placeholder="00000000000" maxlength="11" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none"></div>
-                <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome da sua Mãe *</label><input type="text" id="redefNomeMae" placeholder="Nome completo da sua mãe" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none"></div>
-                <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Cidade onde Nasceu *</label><input type="text" id="redefCidade" placeholder="Sua cidade natal" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none"></div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">CPF *</label>
+                    <input type="text" id="redefCPF" placeholder="000.000.000-00" maxlength="14" 
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none"
+                           oninput="mascaraCPF(this)">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome da sua Mãe *</label>
+                    <input type="text" id="redefNomeMae" placeholder="Nome completo da sua mãe" 
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Cidade onde Nasceu *</label>
+                    <input type="text" id="redefCidade" placeholder="Sua cidade natal" 
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none">
+                </div>
             </div>
-            <button id="btnSolicitarCodigo" class="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all text-sm uppercase tracking-wider">📱 Receber Código no WhatsApp</button>
+            <button id="btnSolicitarCodigo" class="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all text-sm">
+                <i class="fab fa-whatsapp"></i> RECEBER CÓDIGO NO WHATSAPP
+            </button>
         </div>
+        
+        <!-- Etapa 2: Nova Senha -->
         <div id="etapaVerificar" class="hidden">
-            <p class="text-sm text-slate-600 mb-4">Enviamos um código ALEATÓRIO para seu WhatsApp</p>
-            <div class="text-left space-y-4">
-                <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Código Recebido *</label><input type="text" id="redefCodigo" placeholder="Código de 6 dígitos" maxlength="6" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none text-center text-2xl font-bold tracking-widest"></div>
-                <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nova Senha (6 dígitos) *</label><input type="password" id="redefNovaSenha" placeholder="******" maxlength="6" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none"></div>
+            <div class="bg-green-50 border border-green-200 rounded-xl p-3 mb-4">
+                <p class="text-sm text-green-700 font-bold">
+                    <i class="fas fa-check-circle"></i> Código enviado para seu WhatsApp!
+                </p>
             </div>
-            <button id="btnConfirmarRedefinir" class="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all text-sm uppercase tracking-wider">✅ Redefinir Senha</button>
+            <div class="text-left space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Código Recebido *</label>
+                    <input type="text" id="redefCodigo" placeholder="000000" maxlength="6" 
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none text-center text-2xl font-bold tracking-widest">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nova Senha (6 dígitos) *</label>
+                    <input type="password" id="redefNovaSenha" placeholder="******" maxlength="6" 
+                           class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 outline-none">
+                </div>
+            </div>
+            <button id="btnConfirmarRedefinir" class="w-full mt-4 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold shadow-lg transition-all text-sm">
+                <i class="fas fa-check"></i> REDEFINIR SENHA
+            </button>
         </div>
-        <p class="text-sm text-slate-500 mt-4"><span onclick="showScreen('screenLogin')" class="text-emerald-600 font-bold hover:underline cursor-pointer">🔙 Voltar ao Login</span></p>
+        
+        <p class="text-sm text-slate-500 mt-4">
+            <span onclick="showScreen('screenLogin')" class="text-emerald-600 font-bold hover:underline cursor-pointer">
+                <i class="fas fa-arrow-left"></i> Voltar ao Login
+            </span>
+        </p>
     </div>
 </div>
 
-<!-- ============ TELA 4: PORTAL ============ -->
+<!-- ============================================ -->
+<!-- TELA 4: PORTAL DO PACIENTE -->
+<!-- ============================================ -->
 <div id="screenPortal" class="screen" style="display:none; min-height:100vh; background:#f8fafc;">
     <div style="width:100%;">
-    <header class="gradient-bg text-white p-4 md:p-6 shadow-lg">
-        <div class="max-w-4xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-lg">👤</div>
-                <div>
-                    <h2 class="text-lg font-extrabold">Portal do Paciente</h2>
-                    <p class="text-emerald-300 text-xs">Sistema OCI</p>
+        <!-- Header -->
+        <header class="gradient-bg text-white p-4 md:p-6 shadow-lg">
+            <div class="max-w-5xl mx-auto flex items-center justify-between flex-wrap gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-lg">👤</div>
+                    <div>
+                        <h2 class="text-lg font-extrabold">Portal do Paciente</h2>
+                        <p class="text-emerald-300 text-xs">Sistema OCI v5.3</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-bold hidden md:block" id="portalNome"></span>
+                    <button onclick="logout()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-all">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <span class="text-sm font-bold" id="portalNome"></span>
-                <button onclick="logout()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-all">🚪 Sair</button>
+        </header>
+
+        <div class="max-w-5xl mx-auto p-4 md:p-6">
+            <!-- Cards Informativos -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="infoCards"></div>
+
+            <!-- Abas -->
+            <div class="flex gap-4 md:gap-6 border-b border-slate-200 mb-6 overflow-x-auto">
+                <button onclick="switchTab('solicitar')" id="tab-solicitar" class="tab-btn active pb-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-paper-plane text-blue-500"></i> Solicitar Retorno
+                </button>
+                <button onclick="switchTab('exames')" id="tab-exames" class="tab-btn pb-3 text-sm font-bold text-slate-400 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-cloud-upload-alt text-emerald-500"></i> Enviar Exames
+                </button>
+                <button onclick="switchTab('historico')" id="tab-historico" class="tab-btn pb-3 text-sm font-bold text-slate-400 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-history text-purple-500"></i> Histórico
+                </button>
+                <button onclick="switchTab('meusdados')" id="tab-meusdados" class="tab-btn pb-3 text-sm font-bold text-slate-400 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-user-circle text-amber-500"></i> Meus Dados
+                </button>
             </div>
-        </div>
-    </header>
 
-    <div class="max-w-4xl mx-auto p-4 md:p-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" id="infoCards"></div>
-
-        <div class="flex gap-6 border-b border-slate-200 mb-6 overflow-x-auto">
-            <button onclick="switchTab('solicitar')" id="tab-solicitar" class="tab-btn active pb-3 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fas fa-paper-plane text-blue-500"></i> Solicitar Retorno</button>
-            <button onclick="switchTab('exames')" id="tab-exames" class="tab-btn pb-3 text-sm font-bold text-slate-400 flex items-center gap-2 whitespace-nowrap"><i class="fas fa-cloud-upload-alt text-emerald-500"></i> Enviar Exames</button>
-            <button onclick="switchTab('historico')" id="tab-historico" class="tab-btn pb-3 text-sm font-bold text-slate-400 flex items-center gap-2 whitespace-nowrap"><i class="fas fa-history text-purple-500"></i> Histórico</button>
-        </div>
-
-        <div id="content-solicitar" class="tab-content active">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-                <h3 class="text-lg font-bold text-slate-800 mb-6">📝 Solicitar Pedido de Retorno</h3>
-                <p class="text-sm text-slate-500 mb-4">⚠️ Só é possível solicitar retorno se você já passou pela <strong>primeira consulta</strong> no programa OCI.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- 🆕 NOVO CAMPO -->
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nº Solicitação 1ª Consulta *</label><input type="text" id="numeroSolicitacao" placeholder="Ex: SOL-0001" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-                    <!-- 🆕 NOVO CAMPO -->
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome do Exame Solicitado *</label><input type="text" id="nomeExame" placeholder="Ex: ECG, Laboratoriais, RX..." class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nº Prontuário *</label><input type="text" id="prontuario" placeholder="Ex: PRONT123" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nome da sua Mãe *</label><input type="text" id="validarNomeMae" placeholder="Confirme o nome da sua mãe" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Unidade de Saúde *</label><input type="text" id="unidadeSaude" placeholder="Ex: UBS Jardim das Flores" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Médico Solicitante *</label><input type="text" id="medicoSolicitante" placeholder="Ex: Dr. Carlos Silva" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Especialidade *</label><select id="especialidadeRetorno" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></select></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Data da 1ª Consulta</label><input type="date" id="dataPrimeiraConsulta" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
-                    <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Local da Consulta</label><input type="text" id="localConsulta" placeholder="Ex: Hospital Municipal" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"></div>
+            <!-- ABA: SOLICITAR RETORNO -->
+            <div id="content-solicitar" class="tab-content active">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">
+                        <i class="fas fa-paper-plane text-blue-500"></i> Solicitar Pedido de Retorno
+                    </h3>
+                    <p class="text-sm text-slate-500 mb-6">
+                        ⚠️ Só é possível solicitar retorno se você já passou pela <strong>primeira consulta</strong> no programa OCI.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Nº Solicitação 1ª Consulta *
+                            </label>
+                            <input type="text" id="numeroSolicitacao" placeholder="Ex: SOL-0001" 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Nome do Exame Solicitado *
+                            </label>
+                            <input type="text" id="nomeExame" placeholder="Ex: ECG, Laboratoriais, RX..." 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Nº Prontuário *
+                            </label>
+                            <input type="text" id="prontuario" placeholder="Ex: PRONT123" 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                📱 Seu Telefone *
+                            </label>
+                            <input type="text" id="telefoneRetorno" placeholder="(00) 00000-0000" maxlength="15" 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                   oninput="mascaraTelefone(this)">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Nome da sua Mãe *
+                            </label>
+                            <input type="text" id="validarNomeMae" placeholder="Confirme o nome da sua mãe" 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Unidade de Saúde *
+                            </label>
+                            <input type="text" id="unidadeSaude" placeholder="Ex: UBS Jardim das Flores" 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Médico Solicitante *
+                            </label>
+                            <input type="text" id="medicoSolicitante" placeholder="Ex: Dr. Carlos Silva" 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Especialidade *
+                            </label>
+                            <select id="especialidadeRetorno" 
+                                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none bg-white">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Data da 1ª Consulta
+                            </label>
+                            <input type="date" id="dataPrimeiraConsulta" 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                Local da Consulta
+                            </label>
+                            <input type="text" id="localConsulta" placeholder="Ex: Hospital Municipal" 
+                                   class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none">
+                        </div>
+                    </div>
+                    
+                    <button id="btnSolicitarRetorno" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i> VALIDAR E SOLICITAR RETORNO
+                    </button>
+                    <div id="msgSolicitar" class="mt-4 hidden"></div>
                 </div>
-                <button id="btnSolicitarRetorno" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"><i class="fas fa-paper-plane"></i> VALIDAR E SOLICITAR</button>
-                <div id="msgSolicitar" class="mt-4 hidden"></div>
             </div>
-        </div>
 
-        <div id="content-exames" class="tab-content">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-                <h3 class="text-lg font-bold text-slate-800 mb-6">📤 Enviar Exames Realizados</h3>
-                <div class="mb-4"><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Selecione o Retorno</label><select id="retornoSelect" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none"></select></div>
-                <div class="mb-4"><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Arquivo do Exame (até 3MB)</label><div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-all cursor-pointer" id="uploadArea"><i class="fas fa-cloud-upload-alt text-4xl text-slate-300 mb-3"></i><p class="text-slate-500 font-bold">Clique para selecionar</p><input type="file" id="arquivoExame" accept=".pdf,.jpg,.jpeg,.png" class="hidden"></div><p id="nomeArquivo" class="text-sm text-emerald-600 font-bold mt-2 hidden"></p></div>
-                <button id="btnEnviarExame" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"><i class="fas fa-cloud-upload-alt"></i> ENVIAR EXAME</button>
-                <div id="msgExames" class="mt-4 hidden"></div>
+            <!-- ABA: ENVIAR EXAMES -->
+            <div id="content-exames" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6">
+                        <i class="fas fa-cloud-upload-alt text-emerald-500"></i> Enviar Exames Realizados
+                    </h3>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                            Selecione o Retorno
+                        </label>
+                        <select id="retornoSelect" 
+                                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none bg-white">
+                            <option value="">Selecione um retorno...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">
+                            Arquivo do Exame (PDF, JPG, PNG)
+                        </label>
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-all cursor-pointer bg-slate-50" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-slate-300 mb-3"></i>
+                            <p class="text-slate-500 font-bold">Clique para selecionar o arquivo</p>
+                            <p class="text-xs text-slate-400 mt-1">PDF, JPG ou PNG até 10MB</p>
+                            <input type="file" id="arquivoExame" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+                        </div>
+                        <p id="nomeArquivo" class="text-sm text-emerald-600 font-bold mt-2 hidden">
+                            <i class="fas fa-check-circle"></i> <span id="nomeArquivoTexto"></span>
+                        </p>
+                    </div>
+                    
+                    <button id="btnEnviarExame" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2">
+                        <i class="fas fa-cloud-upload-alt"></i> ENVIAR EXAME
+                    </button>
+                    <div id="msgExames" class="mt-4 hidden"></div>
+                </div>
             </div>
-        </div>
 
-        <div id="content-historico" class="tab-content">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-                <h3 class="text-lg font-bold text-slate-800 mb-6">📋 Meus Retornos e Exames</h3>
-                <div class="space-y-4" id="historicoLista"></div>
+            <!-- ABA: HISTÓRICO -->
+            <div id="content-historico" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6">
+                        <i class="fas fa-history text-purple-500"></i> Meus Retornos e Exames
+                    </h3>
+                    <div class="space-y-4" id="historicoLista">
+                        <p class="text-slate-400 text-center py-8">Carregando...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 🆕 ABA: MEUS DADOS -->
+            <div id="content-meusdados" class="tab-content">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6">
+                        <i class="fas fa-user-circle text-amber-500"></i> Meus Dados Cadastrais
+                    </h3>
+                    <div id="meusDadosConteudo" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p class="text-slate-400">Carregando...</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
     </div>
 </div>
 
@@ -180,46 +441,123 @@
 // ============================================
 // CONFIGURAÇÃO SUPABASE
 // ============================================
-const db = window.supabase.createClient('https://hheuvkyhwujdrvjvtryg.supabase.co', 'sb_publishable__YOfe8p2KexVxAe5ovSS5w_SOnqpuoe');
+const db = window.supabase.createClient(
+    'https://hheuvkyhwujdrvjvtryg.supabase.co', 
+    'sb_publishable__YOfe8p2KexVxAe5ovSS5w_SOnqpuoe'
+);
 
 let pacienteLogado = null;
-let retornos = [], especialidades = [];
+let retornos = [];
+let especialidades = [];
 let codigoRedefinicao = null;
 
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
 function showLoading(){ document.getElementById('loadingOverlay').classList.add('show'); }
 function hideLoading(){ document.getElementById('loadingOverlay').classList.remove('show'); }
-function validarCPF(cpf){ cpf=cpf.replace(/\D/g,''); if(cpf.length!==11||/^(\d)\1{10}$/.test(cpf))return false; let s=0; for(let i=0;i<9;i++)s+=parseInt(cpf[i])*(10-i); let r=(s*10)%11; if(r===10)r=0; if(r!==parseInt(cpf[9]))return false; s=0; for(let i=0;i<10;i++)s+=parseInt(cpf[i])*(11-i); r=(s*10)%11; if(r===10)r=0; return r===parseInt(cpf[10]); }
-function formatarData(data){ if(!data)return'—'; return new Date(data.split('T')[0]).toLocaleDateString('pt-BR'); }
-function gerarCodigoAleatorio(){ return String(Math.floor(100000 + Math.random() * 900000)); }
+
+function validarCPF(cpf){ 
+    cpf=cpf.replace(/\D/g,''); 
+    if(cpf.length!==11||/^(\d)\1{10}$/.test(cpf)) return false; 
+    let s=0; for(let i=0;i<9;i++) s+=parseInt(cpf[i])*(10-i); 
+    let r=(s*10)%11; if(r===10) r=0; 
+    if(r!==parseInt(cpf[9])) return false; 
+    s=0; for(let i=0;i<10;i++) s+=parseInt(cpf[i])*(11-i); 
+    r=(s*10)%11; if(r===10) r=0; 
+    return r===parseInt(cpf[10]); 
+}
+
+function formatarData(data){ 
+    if(!data) return '—'; 
+    return new Date(data.split('T')[0] + 'T12:00:00').toLocaleDateString('pt-BR'); 
+}
+
+function formatarTelefone(tel){
+    if(!tel) return '—';
+    tel = tel.replace(/\D/g,'');
+    if(tel.length === 11) return '(' + tel.slice(0,2) + ') ' + tel.slice(2,7) + '-' + tel.slice(7);
+    if(tel.length === 10) return '(' + tel.slice(0,2) + ') ' + tel.slice(2,6) + '-' + tel.slice(6);
+    return tel;
+}
+
+function gerarCodigoAleatorio(){ 
+    return String(Math.floor(100000 + Math.random() * 900000)); 
+}
+
+function mascaraCPF(input){
+    let v = input.value.replace(/\D/g,'');
+    if(v.length > 11) v = v.slice(0,11);
+    v = v.replace(/(\d{3})(\d)/,'$1.$2');
+    v = v.replace(/(\d{3})(\d)/,'$1.$2');
+    v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+    input.value = v;
+}
+
+function mascaraTelefone(input){
+    let v = input.value.replace(/\D/g,'');
+    if(v.length > 11) v = v.slice(0,11);
+    if(v.length > 2) v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+    if(v.length > 10) v = v.slice(0,10) + '-' + v.slice(10);
+    input.value = v;
+}
+
+function toggleSenha(id, btn){
+    const input = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if(input.type === 'password'){
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
 
 function showScreen(id){
-    document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); s.style.display='none'; });
+    document.querySelectorAll('.screen').forEach(s => { 
+        s.classList.remove('active'); 
+        s.style.display = 'none'; 
+    });
     const el = document.getElementById(id);
-    el.classList.add('active');
-    el.style.display = (id==='screenPortal') ? 'block' : 'flex';
+    if(el){
+        el.classList.add('active');
+        el.style.display = (id === 'screenPortal') ? 'block' : 'flex';
+    }
+    
+    // Resetar redefinição ao voltar
+    if(id === 'screenRedefinir'){
+        document.getElementById('etapaSolicitar').classList.remove('hidden');
+        document.getElementById('etapaVerificar').classList.add('hidden');
+        document.getElementById('redefCPF').value = '';
+        document.getElementById('redefNomeMae').value = '';
+        document.getElementById('redefCidade').value = '';
+        document.getElementById('redefCodigo').value = '';
+        document.getElementById('redefNovaSenha').value = '';
+    }
 }
 
 // ============================================
 // LOGIN
 // ============================================
 document.getElementById('btnLogin').addEventListener('click', async () => {
-    const cpf = document.getElementById('loginCPF').value.trim();
+    const cpf = document.getElementById('loginCPF').value.replace(/\D/g,'');
     const senha = document.getElementById('loginSenha').value.trim();
-    if(!cpf||!validarCPF(cpf)) return alert('CPF inválido!');
-    if(!senha||senha.length!==6) return alert('Senha deve ter 6 dígitos!');
+    
+    if(!cpf || !validarCPF(cpf)) return alert('❌ CPF inválido!');
+    if(!senha || senha.length !== 6) return alert('❌ Senha deve ter 6 dígitos!');
     
     showLoading();
-    const {data} = await db.from('pacientes_oci').select('*').eq('cpf',cpf);
+    const { data, error } = await db.from('pacientes_oci').select('*').eq('cpf', cpf).single();
     hideLoading();
     
-    if(!data||data.length===0) return alert('❌ Paciente não encontrado. Faça seu cadastro primeiro.');
-    if(data[0].senha !== senha) return alert('❌ Senha incorreta!');
+    if(error || !data) return alert('❌ Paciente não encontrado. Faça seu cadastro primeiro.');
+    if(data.senha !== senha) return alert('❌ Senha incorreta!');
     
-    pacienteLogado = data[0];
-    document.getElementById('screenLogin').classList.remove('active');
-    document.getElementById('screenLogin').style.display='none';
-    document.getElementById('screenPortal').classList.add('active');
-    document.getElementById('screenPortal').style.display='block';
+    pacienteLogado = data;
+    showScreen('screenPortal');
     carregarPortal();
 });
 
@@ -228,33 +566,38 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 // ============================================
 document.getElementById('btnCadastrar').addEventListener('click', async () => {
     const nome = document.getElementById('cadNome').value.trim();
-    const cpf = document.getElementById('cadCPF').value.trim();
+    const cpf = document.getElementById('cadCPF').value.replace(/\D/g,'');
     const data_nascimento = document.getElementById('cadNascimento').value;
     const nome_mae = document.getElementById('cadNomeMae').value.trim();
     const cidade_nascimento = document.getElementById('cadCidade').value.trim();
-    const telefone = document.getElementById('cadTelefone').value.trim();
+    const telefone = document.getElementById('cadTelefone').value.replace(/\D/g,'');
     const email = document.getElementById('cadEmail').value.trim();
-    const senha = document.getElementById('cadSenha').value;
-    const confirma = document.getElementById('cadConfirmaSenha').value;
+    const senha = document.getElementById('cadSenha').value.trim();
+    const confirma = document.getElementById('cadConfirmaSenha').value.trim();
     
-    if(!nome) return alert('Digite seu nome!');
-    if(!cpf||!validarCPF(cpf)) return alert('CPF inválido!');
-    if(!data_nascimento) return alert('Informe sua data de nascimento!');
-    if(!nome_mae) return alert('Informe o nome da sua mãe!');
-    if(!cidade_nascimento) return alert('Informe sua cidade natal!');
-    if(!telefone||telefone.length<10) return alert('Telefone inválido!');
-    if(!senha||senha.length!==6) return alert('Senha deve ter 6 dígitos!');
-    if(senha !== confirma) return alert('Senhas não conferem!');
+    if(!nome) return alert('❌ Digite seu nome!');
+    if(!cpf || !validarCPF(cpf)) return alert('❌ CPF inválido!');
+    if(!data_nascimento) return alert('❌ Informe sua data de nascimento!');
+    if(!nome_mae) return alert('❌ Informe o nome da sua mãe!');
+    if(!cidade_nascimento) return alert('❌ Informe sua cidade natal!');
+    if(!telefone || telefone.length < 10) return alert('❌ Telefone inválido!');
+    if(!senha || senha.length !== 6) return alert('❌ Senha deve ter 6 dígitos!');
+    if(senha !== confirma) return alert('❌ Senhas não conferem!');
     
     showLoading();
-    const {data:existente} = await db.from('pacientes_oci').select('*').eq('cpf',cpf);
-    if(existente&&existente.length>0){ hideLoading(); return alert('❌ CPF já cadastrado! Faça login ou redefina sua senha.'); }
     
-    const {error} = await db.from('pacientes_oci').insert([{nome,cpf,data_nascimento,nome_mae,cidade_nascimento,telefone,email,senha,primeira_consulta:false}]);
+    const { data: existente } = await db.from('pacientes_oci').select('id').eq('cpf', cpf).single();
+    if(existente){ hideLoading(); return alert('❌ CPF já cadastrado! Faça login.'); }
+    
+    const { error } = await db.from('pacientes_oci').insert([{
+        nome, cpf, data_nascimento, nome_mae, cidade_nascimento, 
+        telefone, email, senha, primeira_consulta: false
+    }]);
+    
     hideLoading();
-    if(error) return alert('❌ Erro: '+error.message);
+    if(error) return alert('❌ Erro: ' + error.message);
     
-    alert('✅ Cadastro realizado com sucesso! Faça login.');
+    alert('✅ Cadastro realizado com sucesso!\n\n📱 Seu telefone foi registrado: ' + formatarTelefone(telefone));
     showScreen('screenLogin');
 });
 
@@ -262,179 +605,337 @@ document.getElementById('btnCadastrar').addEventListener('click', async () => {
 // REDEFINIR SENHA
 // ============================================
 document.getElementById('btnSolicitarCodigo').addEventListener('click', async () => {
-    const cpf = document.getElementById('redefCPF').value.trim();
+    const cpf = document.getElementById('redefCPF').value.replace(/\D/g,'');
     const nome_mae = document.getElementById('redefNomeMae').value.trim();
     const cidade = document.getElementById('redefCidade').value.trim();
     
-    if(!cpf||!validarCPF(cpf)) return alert('CPF inválido!');
-    if(!nome_mae) return alert('Informe o nome da sua mãe!');
-    if(!cidade) return alert('Informe sua cidade natal!');
+    if(!cpf || !validarCPF(cpf)) return alert('❌ CPF inválido!');
+    if(!nome_mae) return alert('❌ Informe o nome da sua mãe!');
+    if(!cidade) return alert('❌ Informe sua cidade natal!');
     
     showLoading();
-    const {data} = await db.from('pacientes_oci').select('*').eq('cpf',cpf);
+    const { data, error } = await db.from('pacientes_oci').select('*').eq('cpf', cpf).single();
     hideLoading();
     
-    if(!data||data.length===0) return alert('❌ Paciente não encontrado.');
-    
-    const p = data[0];
-    if(p.nome_mae !== nome_mae) return alert('❌ Nome da mãe não confere!');
-    if(p.cidade_nascimento !== cidade) return alert('❌ Cidade natal não confere!');
+    if(error || !data) return alert('❌ Paciente não encontrado.');
+    if(data.nome_mae !== nome_mae) return alert('❌ Nome da mãe não confere!');
+    if(data.cidade_nascimento !== cidade) return alert('❌ Cidade natal não confere!');
     
     codigoRedefinicao = gerarCodigoAleatorio();
-    await db.from('pacientes_oci').update({codigo_redefinicao: codigoRedefinicao}).eq('cpf',cpf);
+    
+    await db.from('pacientes_oci').update({ codigo_redefinicao: codigoRedefinicao }).eq('cpf', cpf);
     
     document.getElementById('etapaSolicitar').classList.add('hidden');
     document.getElementById('etapaVerificar').classList.remove('hidden');
+    document.getElementById('redefTitulo').textContent = 'Etapa 2: Verificar Código';
     
-    const msg = encodeURIComponent(`*Sistema OCI - Redefinição de Senha*\n\nSeu código de verificação é: *${codigoRedefinicao}*\n\n⚠️ Não compartilhe este código com ninguém!\n\nSe não foi você, ignore esta mensagem.`);
-    window.open(`https://wa.me/55${p.telefone.replace(/\D/g,'')}?text=${msg}`, '_blank');
-    alert('📱 Código ALEATÓRIO enviado para seu WhatsApp!');
+    // Enviar WhatsApp se tiver telefone
+    if(data.telefone){
+        const msg = encodeURIComponent(
+            '*Sistema OCI - Redefinição de Senha*\n\n' +
+            'Seu código de verificação é: *' + codigoRedefinicao + '*\n\n' +
+            '⚠️ Não compartilhe este código!\n' +
+            '📱 Telefone cadastrado: ' + formatarTelefone(data.telefone)
+        );
+        window.open('https://wa.me/55' + data.telefone + '?text=' + msg, '_blank');
+    }
+    
+    alert('📱 Código enviado!\n\nUse o código: ' + codigoRedefinicao + '\n\n(WhatsApp aberto se tiver telefone cadastrado)');
 });
 
 document.getElementById('btnConfirmarRedefinir').addEventListener('click', async () => {
-    const cpf = document.getElementById('redefCPF').value.trim();
+    const cpf = document.getElementById('redefCPF').value.replace(/\D/g,'');
     const codigo = document.getElementById('redefCodigo').value.trim();
-    const novaSenha = document.getElementById('redefNovaSenha').value;
+    const novaSenha = document.getElementById('redefNovaSenha').value.trim();
     
     if(codigo !== codigoRedefinicao) return alert('❌ Código incorreto!');
-    if(!novaSenha||novaSenha.length!==6) return alert('Senha deve ter 6 dígitos!');
+    if(!novaSenha || novaSenha.length !== 6) return alert('❌ Senha deve ter 6 dígitos!');
     
     showLoading();
-    await db.from('pacientes_oci').update({senha:novaSenha,codigo_redefinicao:null}).eq('cpf',cpf);
+    await db.from('pacientes_oci').update({ senha: novaSenha, codigo_redefinicao: null }).eq('cpf', cpf);
     hideLoading();
     
     alert('✅ Senha redefinida com sucesso! Faça login.');
-    document.getElementById('etapaSolicitar').classList.remove('hidden');
-    document.getElementById('etapaVerificar').classList.add('hidden');
-    document.getElementById('redefCodigo').value='';
-    document.getElementById('redefNovaSenha').value='';
     showScreen('screenLogin');
 });
 
 // ============================================
-// PORTAL
+// CARREGAR PORTAL
 // ============================================
 async function carregarPortal(){
     showLoading();
+    
     const [r, e] = await Promise.all([
-        db.from('retornos_solicitados').select('*').eq('paciente_id',pacienteLogado.id).order('created_at',{ascending:false}),
+        db.from('retornos_solicitados').select('*').eq('paciente_id', pacienteLogado.id).order('created_at', {ascending: false}),
         db.from('especialidades_oci').select('*')
     ]);
+    
     retornos = r.data || [];
     especialidades = e.data || [];
-    if(especialidades.length===0) especialidades = [{id:1,nome:'Cardiologia',icone:'🫀'},{id:2,nome:'Ortopedia',icone:'🦴'},{id:3,nome:'Oncologia',icone:'🎗️'},{id:4,nome:'Oftalmologia',icone:'👁️'},{id:5,nome:'Otorrino',icone:'👂'}];
+    
+    if(especialidades.length === 0){
+        especialidades = [
+            {id:1, nome:'Cardiologia', icone:'🫀'},
+            {id:2, nome:'Ortopedia', icone:'🦴'},
+            {id:3, nome:'Oncologia', icone:'🎗️'},
+            {id:4, nome:'Oftalmologia', icone:'👁️'},
+            {id:5, nome:'Otorrino', icone:'👂'}
+        ];
+    }
+    
     hideLoading();
     
+    // Header
     document.getElementById('portalNome').textContent = pacienteLogado.nome;
+    
+    // Cards
     document.getElementById('infoCards').innerHTML = `
-        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-blue-500"><p class="text-xs text-slate-500 uppercase font-bold">CPF</p><p class="text-lg font-extrabold text-slate-800">${pacienteLogado.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4')}</p></div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-emerald-500"><p class="text-xs text-slate-500 uppercase font-bold">Retornos</p><p class="text-lg font-extrabold text-slate-800">${retornos.length}</p></div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-purple-500"><p class="text-xs text-slate-500 uppercase font-bold">Prontuário</p><p class="text-lg font-extrabold text-slate-800">${pacienteLogado.prontuario||'—'}</p></div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-blue-500">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">CPF</p>
+            <p class="text-sm font-extrabold text-slate-800">${pacienteLogado.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4')}</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-emerald-500">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">Retornos</p>
+            <p class="text-sm font-extrabold text-slate-800">${retornos.length}</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-purple-500">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">Prontuário</p>
+            <p class="text-sm font-extrabold text-slate-800">${pacienteLogado.prontuario || '—'}</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm card-hover border-l-4 border-amber-500">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">📱 Telefone</p>
+            <p class="text-sm font-extrabold text-slate-800">${formatarTelefone(pacienteLogado.telefone)}</p>
+        </div>
     `;
-    document.getElementById('especialidadeRetorno').innerHTML = '<option value="">Selecione...</option>'+especialidades.map(e=>`<option value="${e.id}">${e.icone||''} ${e.nome}</option>`).join('');
-    document.getElementById('retornoSelect').innerHTML = '<option value="">Selecione...</option>'+retornos.filter(r=>r.status==='solicitado').map(r=>`<option value="${r.id}">📝 Retorno #${r.id} - ${formatarData(r.created_at)}</option>`).join('');
-    document.getElementById('historicoLista').innerHTML = retornos.length===0?'<p class="text-slate-400 text-center py-8">Nenhum retorno solicitado.</p>':retornos.map(r=>`<div class="border border-slate-200 rounded-xl p-4"><p class="font-bold">📝 Retorno #${r.id}</p><p class="text-xs text-slate-500">📅 ${formatarData(r.created_at)} | 🏥 ${r.unidade_saude||'—'} | 👨‍⚕️ Dr(a). ${r.medico_solicitante||'—'}</p><p class="text-xs text-slate-500">🔢 Nº SOL: ${r.numero_solicitacao||'—'} | 🧪 Exame: ${r.nome_exame||'—'}</p><span class="px-2 py-1 rounded-full text-xs font-bold ${r.status==='solicitado'?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700'}">${r.status==='solicitado'?'⏳ Aguardando':'✅ Realizado'}</span></div>`).join('');
+    
+    // Preencher select de especialidade
+    document.getElementById('especialidadeRetorno').innerHTML = 
+        '<option value="">Selecione...</option>' + 
+        especialidades.map(e => `<option value="${e.id}">${e.icone||''} ${e.nome}</option>`).join('');
+    
+    // Preencher select de retornos
+    document.getElementById('retornoSelect').innerHTML = 
+        '<option value="">Selecione um retorno...</option>' + 
+        retornos.filter(r => r.status === 'solicitado')
+                .map(r => `<option value="${r.id}">📝 Retorno #${r.id} - ${formatarData(r.created_at)}</option>`).join('');
+    
+    // Preencher histórico
+    if(retornos.length === 0){
+        document.getElementById('historicoLista').innerHTML = 
+            '<p class="text-slate-400 text-center py-8"><i class="fas fa-inbox text-4xl mb-3 block"></i>Nenhum retorno solicitado ainda.</p>';
+    } else {
+        document.getElementById('historicoLista').innerHTML = retornos.map(r => `
+            <div class="border border-slate-200 rounded-xl p-4 hover:border-blue-300 transition-all">
+                <div class="flex justify-between items-start flex-wrap gap-2">
+                    <div>
+                        <p class="font-bold text-slate-800">📝 Retorno #${r.id}</p>
+                        <p class="text-xs text-slate-500 mt-1">
+                            📅 ${formatarData(r.created_at)} | 
+                            🏥 ${r.unidade_saude || '—'} | 
+                            👨‍⚕️ ${r.medico_solicitante || '—'}
+                        </p>
+                        <p class="text-xs text-slate-500">
+                            🔢 Nº SOL: ${r.numero_solicitacao || '—'} | 
+                            🧪 Exame: ${r.nome_exame || '—'}
+                        </p>
+                        ${r.telefone_paciente ? `<p class="text-xs text-slate-500">📱 Tel: ${formatarTelefone(r.telefone_paciente)}</p>` : ''}
+                    </div>
+                    <span class="px-2 py-1 rounded-full text-xs font-bold ${
+                        r.status === 'solicitado' ? 'bg-amber-100 text-amber-700' : 
+                        r.status === 'exame_enviado' ? 'bg-blue-100 text-blue-700' : 
+                        'bg-emerald-100 text-emerald-700'
+                    }">
+                        ${r.status === 'solicitado' ? '⏳ Aguardando' : 
+                          r.status === 'exame_enviado' ? '📤 Exame Enviado' : 
+                          '✅ Realizado'}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Preencher Meus Dados
+    document.getElementById('meusDadosConteudo').innerHTML = `
+        <div class="bg-slate-50 p-4 rounded-xl">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">Nome Completo</p>
+            <p class="font-bold text-slate-800">${pacienteLogado.nome || '—'}</p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">CPF</p>
+            <p class="font-bold text-slate-800">${pacienteLogado.cpf ? pacienteLogado.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4') : '—'}</p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">📱 Telefone</p>
+            <p class="font-bold text-slate-800">${formatarTelefone(pacienteLogado.telefone)}</p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">Data Nascimento</p>
+            <p class="font-bold text-slate-800">${formatarData(pacienteLogado.data_nascimento)}</p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">Nome da Mãe</p>
+            <p class="font-bold text-slate-800">${pacienteLogado.nome_mae || '—'}</p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">Cidade Natal</p>
+            <p class="font-bold text-slate-800">${pacienteLogado.cidade_nascimento || '—'}</p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">Prontuário</p>
+            <p class="font-bold text-slate-800">${pacienteLogado.prontuario || '—'}</p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-xl">
+            <p class="text-[10px] text-slate-500 uppercase font-bold">Unidade de Saúde</p>
+            <p class="font-bold text-slate-800">${pacienteLogado.unidade_saude || '—'}</p>
+        </div>
+    `;
 }
 
 function switchTab(tabId){
-    document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active');b.classList.add('text-slate-400');});
-    document.getElementById('tab-'+tabId).classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-    document.getElementById('content-'+tabId).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => { 
+        b.classList.remove('active', 'text-emerald-600'); 
+        b.classList.add('text-slate-400'); 
+    });
+    document.getElementById('tab-' + tabId).classList.add('active', 'text-emerald-600');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('content-' + tabId).classList.add('active');
 }
 
 // ============================================
-// SOLICITAR RETORNO (COM NOVOS CAMPOS)
+// SOLICITAR RETORNO
 // ============================================
 document.getElementById('btnSolicitarRetorno').addEventListener('click', async () => {
     const numeroSolicitacao = document.getElementById('numeroSolicitacao').value.trim();
     const nomeExame = document.getElementById('nomeExame').value.trim();
     const prontuario = document.getElementById('prontuario').value.trim();
+    const telefone = document.getElementById('telefoneRetorno').value.replace(/\D/g,'');
     const nome_mae = document.getElementById('validarNomeMae').value.trim();
     const unidade = document.getElementById('unidadeSaude').value.trim();
     const medico = document.getElementById('medicoSolicitante').value.trim();
     const esp = document.getElementById('especialidadeRetorno').value;
     
-    if(!numeroSolicitacao) return alert('Informe o Nº da Solicitação da 1ª Consulta!');
-    if(!nomeExame) return alert('Informe o nome do exame solicitado!');
-    if(!prontuario) return alert('Informe o número do prontuário!');
-    if(!nome_mae) return alert('Informe o nome da sua mãe!');
-    if(!unidade||!medico||!esp) return alert('Preencha todos os campos obrigatórios!');
+    if(!numeroSolicitacao) return alert('❌ Informe o Nº da Solicitação da 1ª Consulta!');
+    if(!nomeExame) return alert('❌ Informe o nome do exame solicitado!');
+    if(!prontuario) return alert('❌ Informe o número do prontuário!');
+    if(!telefone || telefone.length < 10) return alert('❌ Informe um telefone válido!');
+    if(!nome_mae) return alert('❌ Informe o nome da sua mãe!');
+    if(!unidade || !medico || !esp) return alert('❌ Preencha todos os campos obrigatórios!');
     
     showLoading();
     
-    // Buscar a consulta pelo número de solicitação
-    const numSOL = numeroSolicitacao.replace('SOL-','');
-    const {data: consulta} = await db.from('consultas_oci').select('*').eq('id', parseInt(numSOL)||0).single();
-    
-    if(!consulta){
-        hideLoading();
-        mostrarMsg('msgSolicitar', '❌ Nº de Solicitação da 1ª Consulta não encontrado!', 'rose');
-        return;
-    }
-    
     // Validar nome da mãe
-    const {data: paciente} = await db.from('pacientes_oci').select('*').eq('cpf', pacienteLogado.cpf).single();
-    if(paciente && paciente.nome_mae && paciente.nome_mae.toUpperCase() !== nome_mae.toUpperCase()){
+    if(pacienteLogado.nome_mae && pacienteLogado.nome_mae.toUpperCase() !== nome_mae.toUpperCase()){
         hideLoading();
         mostrarMsg('msgSolicitar', '❌ Nome da mãe não confere com nosso cadastro.', 'rose');
         return;
     }
     
-    // ✅ Registrar retorno vinculado à consulta
-    const {error} = await db.from('retornos_solicitados').insert([{
+    // Inserir retorno
+    const { error } = await db.from('retornos_solicitados').insert([{
         paciente_id: pacienteLogado.id,
-        consulta_id: consulta.id,
         numero_solicitacao: numeroSolicitacao,
         nome_exame: nomeExame,
         unidade_saude: unidade,
         medico_solicitante: medico,
         especialidade_id: parseInt(esp),
-        data_primeira_consulta: document.getElementById('dataPrimeiraConsulta').value || consulta.data_agendada,
+        data_primeira_consulta: document.getElementById('dataPrimeiraConsulta').value || null,
         local_consulta: document.getElementById('localConsulta').value.trim(),
+        telefone_paciente: telefone,
         status: 'solicitado'
     }]);
     
-    if(error){ hideLoading(); mostrarMsg('msgSolicitar','❌ Erro: '+error.message,'rose'); return; }
+    if(error){ 
+        hideLoading(); 
+        mostrarMsg('msgSolicitar', '❌ Erro: ' + error.message, 'rose'); 
+        return; 
+    }
     
-    await db.from('pacientes_oci').update({prontuario: prontuario}).eq('id', pacienteLogado.id);
+    // Atualizar prontuário e telefone do paciente
+    await db.from('pacientes_oci').update({ 
+        prontuario: prontuario,
+        telefone: telefone 
+    }).eq('id', pacienteLogado.id);
     
     hideLoading();
-    mostrarMsg('msgSolicitar', '✅ Retorno solicitado com sucesso! Vinculado à consulta '+numeroSolicitacao, 'emerald');
+    mostrarMsg('msgSolicitar', '✅ Retorno solicitado com sucesso!\n📱 Telefone registrado: ' + formatarTelefone(telefone), 'emerald');
+    
+    // Limpar campos
     document.getElementById('numeroSolicitacao').value = '';
     document.getElementById('nomeExame').value = '';
     document.getElementById('prontuario').value = '';
+    document.getElementById('telefoneRetorno').value = '';
     document.getElementById('validarNomeMae').value = '';
     document.getElementById('unidadeSaude').value = '';
     document.getElementById('medicoSolicitante').value = '';
+    document.getElementById('dataPrimeiraConsulta').value = '';
+    document.getElementById('localConsulta').value = '';
+    
     carregarPortal();
 });
 
 function mostrarMsg(id, texto, cor){
     const el = document.getElementById(id);
-    el.className = 'mt-4 p-3 rounded-xl text-sm font-bold border-l-4 ' + (cor==='emerald'?'bg-emerald-50 text-emerald-700 border-emerald-500':'bg-rose-50 text-rose-700 border-rose-500');
+    el.className = 'mt-4 p-3 rounded-xl text-sm font-bold border-l-4 ' + 
+        (cor === 'emerald' ? 'bg-emerald-50 text-emerald-700 border-emerald-500' : 
+         'bg-rose-50 text-rose-700 border-rose-500');
     el.textContent = texto;
     el.classList.remove('hidden');
 }
 
+// ============================================
+// ENVIAR EXAMES
+// ============================================
 document.getElementById('btnEnviarExame').addEventListener('click', async () => {
     const retorno_id = document.getElementById('retornoSelect').value;
     const arquivo = document.getElementById('arquivoExame').files[0];
-    if(!retorno_id||!arquivo) return alert('Selecione o retorno e o arquivo!');
+    
+    if(!retorno_id) return alert('❌ Selecione o retorno!');
+    if(!arquivo) return alert('❌ Selecione o arquivo!');
+    
     showLoading();
-    await db.from('exames_enviados').insert([{paciente_id:pacienteLogado.id,retorno_id:parseInt(retorno_id),arquivo_nome:arquivo.name,arquivo_url:'arquivo_'+Date.now(),status:'enviado'}]);
-    await db.from('retornos_solicitados').update({status:'exame_enviado'}).eq('id',retorno_id);
+    
+    const { error } = await db.from('exames_enviados').insert([{
+        paciente_id: pacienteLogado.id,
+        retorno_id: parseInt(retorno_id),
+        arquivo_nome: arquivo.name,
+        arquivo_url: 'arquivo_' + Date.now(),
+        status: 'enviado'
+    }]);
+    
+    if(error){ hideLoading(); return alert('❌ Erro: ' + error.message); }
+    
+    await db.from('retornos_solicitados').update({ status: 'exame_enviado' }).eq('id', retorno_id);
+    
     hideLoading();
-    alert('✅ Exame enviado!');
+    mostrarMsg('msgExames', '✅ Exame enviado com sucesso!', 'emerald');
     carregarPortal();
 });
 
-document.getElementById('uploadArea').addEventListener('click',()=>document.getElementById('arquivoExame').click());
-document.getElementById('arquivoExame').addEventListener('change',function(){if(this.files[0]){document.getElementById('nomeArquivo').textContent='📎 '+this.files[0].name;document.getElementById('nomeArquivo').classList.remove('hidden');}});
+// Upload area
+document.getElementById('uploadArea').addEventListener('click', () => document.getElementById('arquivoExame').click());
+document.getElementById('arquivoExame').addEventListener('change', function(){
+    if(this.files[0]){
+        document.getElementById('nomeArquivoTexto').textContent = '📎 ' + this.files[0].name;
+        document.getElementById('nomeArquivo').classList.remove('hidden');
+    }
+});
 
-function logout(){ pacienteLogado=null; showScreen('screenLogin'); }
+// ============================================
+// LOGOUT
+// ============================================
+function logout(){ 
+    pacienteLogado = null; 
+    showScreen('screenLogin'); 
+}
 
-console.log('✅ Portal do Paciente ATUALIZADO! 🆕 Nº Solicitação + Nome Exame');
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+console.log('✅ PORTAL DO PACIENTE OCI v5.3 CARREGADO!');
+console.log('📱 Com telefone em todas as telas');
+console.log('👤 Com aba Meus Dados');
+console.log('📤 Com envio de exames');
+console.log('📋 Com histórico completo');
 </script>
 </body>
 </html>
